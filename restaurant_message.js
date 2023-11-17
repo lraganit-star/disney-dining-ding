@@ -17,7 +17,11 @@ const cookiesFilePath = "./cookies.json";
 main();
 
 async function main() {
-  const status = await getReservationAvailability();
+  const browser = await chromium.launch({
+    // devtools: true
+    headless: false,
+  });
+  const status = await getReservationAvailability(browser);
   console.log("Status", status);
   if (!status.includes("Sorry, there aren't any reservations available")) {
     client.messages
@@ -28,27 +32,15 @@ async function main() {
       })
       .then((message) => console.log(message.body));
   } else {
-    setTimeout(() => {
+    setTimeout(async () => {
       console.log("Checking again");
-    }, 600000);
-    // client.messages
-    //   .create({
-    //     from: process.env.TWILIO_PHONE_NUMBER,
-    //     body: "No reservations available",
-    //     to: process.env.PERSONAL_PHONE_NUMBER,
-    //   })
-    //   .then((message) => console.log(message.body));
-    await main();
+      await main();
+    }, 3600000);
   }
-
-  process.exit();
+  await browser.close();
 }
 
-async function getReservationAvailability() {
-  const browser = await chromium.launch({
-    // devtools: true
-    headless: false,
-  });
+async function getReservationAvailability(browser) {
   require("dotenv").config();
   const page = await browser.newPage();
   const loadedCookies = await loadCookies(page);
