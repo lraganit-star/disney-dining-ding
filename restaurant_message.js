@@ -20,11 +20,24 @@ async function main() {
   const status = await getReservationAvailability();
   console.log("Status", status);
   if (!status.includes("Sorry, there aren't any reservations available")) {
-    console.log("Book it now!");
+    client.messages
+      .create({
+        from: process.env.TWILIO_PHONE_NUMBER,
+        body: "Book Space 220 now!",
+        to: process.env.PERSONAL_PHONE_NUMBER,
+      })
+      .then((message) => console.log(message.body));
   } else {
     setTimeout(() => {
       console.log("Checking again");
     }, 5000);
+    // client.messages
+    //   .create({
+    //     from: process.env.TWILIO_PHONE_NUMBER,
+    //     body: "No reservations available",
+    //     to: process.env.PERSONAL_PHONE_NUMBER,
+    //   })
+    //   .then((message) => console.log(message.body));
     await main();
   }
 
