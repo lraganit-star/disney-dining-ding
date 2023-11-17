@@ -6,12 +6,28 @@ const stealth = require("puppeteer-extra-plugin-stealth");
 const chromium = playwright.chromium;
 puppeteer.use(stealth());
 
+require("dotenv").config();
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require("twilio")(accountSid, authToken);
+
 const link = `https://disneyworld.disney.go.com/dine-res/restaurant/space-220`;
 const cookiesFilePath = "./cookies.json";
 
 main();
 
 async function main() {
+  const status = await getReservationAvailability();
+  console.log("Status", status);
+  if (status.includes("Sorry, there aren't any reservations available")) {
+    console.log("No reservations");
+  } else {
+    console.log("Book it now!");
+  }
+  process.exit();
+}
+
+async function getReservationAvailability() {
   // For some reason we need to run it in headful mode, otherwise the bot detection catches us
   const browser = await chromium.launch({
     // devtools: true
@@ -21,7 +37,6 @@ async function main() {
   const page = await browser.newPage();
   const loadedCookies = await loadCookies(page);
   await page.goto(link);
-  console.log(loadedCookies);
 
   if (loadedCookies === "No cookies found") {
     console.log("login process started");
@@ -31,10 +46,10 @@ async function main() {
   }
 
   console.log("looking for reservation");
-  await wtf(page);
+  const outputMessage = await wtf(page);
   await saveCookies(page);
-
-  process.exit();
+  // console.log(outputMessage);
+  return outputMessage;
 }
 
 async function loadCookies(page) {
@@ -106,5 +121,6 @@ async function wtf(page) {
     .click();
   await page.getByLabel("Thursday, January 4, 2024").click();
   const text = await page.getByRole("combobox", { name: "Time" }).textContent();
-  console.log(text);
+  // console.log(text);
+  return text;
 }
