@@ -19,16 +19,19 @@ main();
 async function main() {
   const status = await getReservationAvailability();
   console.log("Status", status);
-  if (status.includes("Sorry, there aren't any reservations available")) {
-    console.log("No reservations");
-  } else {
+  if (!status.includes("Sorry, there aren't any reservations available")) {
     console.log("Book it now!");
+  } else {
+    setTimeout(() => {
+      console.log("Checking again");
+    }, 5000);
+    await main();
   }
+
   process.exit();
 }
 
 async function getReservationAvailability() {
-  // For some reason we need to run it in headful mode, otherwise the bot detection catches us
   const browser = await chromium.launch({
     // devtools: true
     headless: false,
