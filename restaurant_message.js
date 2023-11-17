@@ -30,7 +30,7 @@ async function main() {
   } else {
     setTimeout(() => {
       console.log("Checking again");
-    }, 5000);
+    }, 600000);
     // client.messages
     //   .create({
     //     from: process.env.TWILIO_PHONE_NUMBER,
